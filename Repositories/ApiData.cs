@@ -9,34 +9,59 @@ namespace currencycalc.Repositories
 {
     public class ApiData : IApiData
     {
+        private readonly HttpClient httpClient;
+        
+        public ApiData(HttpClient httpClient)
+        {
+            this.httpClient = httpClient;
+        }
+
         public async Task<ExchangeRate> GetData(string currency, string hostURL)
         {
             var exchangeRate = new ExchangeRate();
 
-            HttpClientHandler handler = new HttpClientHandler();
-
-            using (var httpClient = new HttpClient(handler))
+            try
             {
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var responseString = await httpClient.GetStringAsync(hostURL + currency);
 
-                using (var response = await httpClient.GetAsync(hostURL + currency))
-                {
-                    try
-                    {
-                        string apiResponse = await response.Content.ReadAsStringAsync();
-
-                        exchangeRate = Newtonsoft.Json.JsonConvert.DeserializeObject<ExchangeRate>(apiResponse); 
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception(ex.Message);
-                    }
-                }
+                exchangeRate = Newtonsoft.Json.JsonConvert.DeserializeObject<ExchangeRate>(responseString);
             }
-
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            
             return exchangeRate;
         }
+        
+//         public async Task<ExchangeRate> GetData(string currency, string hostURL)
+//         {
+//             var exchangeRate = new ExchangeRate();
+
+//             HttpClientHandler handler = new HttpClientHandler();
+
+//             using (var httpClient = new HttpClient(handler))
+//             {
+//                 httpClient.DefaultRequestHeaders.Accept.Clear();
+//                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+//                 using (var response = await httpClient.GetAsync(hostURL + currency))
+//                 {
+//                     try
+//                     {
+//                         string apiResponse = await response.Content.ReadAsStringAsync();
+
+//                         exchangeRate = Newtonsoft.Json.JsonConvert.DeserializeObject<ExchangeRate>(apiResponse); 
+//                     }
+//                     catch (Exception ex)
+//                     {
+//                         throw new Exception(ex.Message);
+//                     }
+//                 }
+//             }
+
+//             return exchangeRate;
+//         }
 
         // avoid calling the API twice
         public List<string> GetCurrencies()

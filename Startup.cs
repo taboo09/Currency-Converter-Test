@@ -26,7 +26,9 @@ namespace CurrencyCalc
         {
             services.AddControllersWithViews();
 
-            services.AddScoped<IApiData, ApiData>();
+            // default value for HttpMessageHandler life time is 2 min
+            services.AddHttpClient<IApiData, ApiData>()
+                .SetHandlerLifetime(TimeSpan.FromMinutes(1));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
